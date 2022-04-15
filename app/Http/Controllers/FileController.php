@@ -41,8 +41,11 @@ class FileController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $this->setDataFromDynamoDb();
-        return $data;
+
+        $data = explode(";", $request->getContent());
+        $data = str_replace('', '"', $data);
+        $datas = $this->setDataFromDynamoDb($data);
+        return $datas;
     }
 
     /**
@@ -190,7 +193,7 @@ class FileController extends Controller
         }
     }
 
-    public function setDataFromDynamoDb()
+    public function setDataFromDynamoDb($data)
     {
         $credentials = new Credentials(env('AWS_ACCESS_KEY_ID'), env('AWS_SECRET_ACCESS_KEY'));
 
@@ -203,21 +206,33 @@ class FileController extends Controller
         $dynamodb = $client->createDynamoDb();
         $marshaler = new Marshaler();
 
-        $tableName = 'benefiaries';
+        $tableName = 'assigned';
 
-        $beneficiary = 10185061471;
-        $descriptions = "Example DEsciption desde laravel";
+        $id = str_replace('"', '', $data[0]);
+        $assigned_date = str_replace('"', '', $data[1]);
+        $assigned_point = str_replace('"', '', $data[2]);
+        $school = str_replace('"', '', $data[3]);
+        $grade = str_replace('"', '', $data[4]);
+        $status = str_replace('"', '', $data[5]);
+        $worker_id = str_replace('"', '', $data[6]);
+        $assigned_point_id = str_replace('"', '', $data[7]);
+        $name = str_replace('"', '', $data[8]);
+        $creation_date = str_replace('"', '', $data[9]);
+        $doc_number = str_replace('"', '', $data[10]);
 
         $item = $marshaler->marshalJson('
             {
-                "id": "10185061471",
-                "school": "",
-                "grade": "",
-                "beneficiary": "' . $beneficiary . '",
-                "descriptions": "' . $descriptions . '",
-                "status": "Con derecho",
-                "worker": "987654321",
-                "name": "Andres Felipe Alvarez Perea"
+                "id": "' . $id . '",
+                "assigned_date": "' . $assigned_date . '",
+                "assigned_point": "' . $assigned_point . '",
+                "school": "' . $school . '",
+                "grade": "' . $grade . '",
+                "status": "' . $status . '",
+                "worker_id": "' . $worker_id . '",
+                "assigned_point_id": "' . $assigned_point_id . '",
+                "name": "' . $name . '",
+                "creation_date": "' . $creation_date . '",
+                "doc_number": "' . $doc_number . '"
             }
         ');
 
@@ -228,7 +243,11 @@ class FileController extends Controller
 
         try {
             $result = $dynamodb->putItem($params);
-            return "Envio exitoso";
+            if ($result['@metadata']['statusCode'] == 200) {
+                return "Envio Exitoso";
+            }else {
+                return $result['@metadata'];
+            }
 
         } catch (DynamoDbException $e) {
             echo "Unable to add item:\n";

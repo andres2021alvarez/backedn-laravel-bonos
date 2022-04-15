@@ -17,8 +17,8 @@ return [
     |
     */
     'credentials' => [
-        'key'    => env('AWS_ACCESS_KEY_ID', 'AKIAVWOOZMIW4HTZXOVT'),
-        'secret' => env('AWS_SECRET_ACCESS_KEY', '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'),
+        'key'    => env('AWS_ACCESS_KEY_ID', 'AKIAVWOOZMIWWSSIFZMR'),
+        'secret' => env('AWS_SECRET_ACCESS_KEY', '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'),
     ],
     'region' => env('AWS_REGION', 'us-east-1'),
     'version' => 'latest',
