@@ -16,6 +16,8 @@ class VerifyCsrfToken extends Middleware
     protected $except = [
         'http://192.168.20.26:8000/api/file',
         'http://192.168.20.26:8000/api/file/status',
+        'http://192.168.20.28:8000/api/file',
+        'http://192.168.20.28:8000/api/file/status',
         'http://192.168.20.41:8000/api/file',
         'http://192.168.20.41:8000/api/file/status'
     ];
