@@ -56,7 +56,8 @@ class FileController extends Controller
      */
     public function show(File $file)
     {
-        //
+        $data = $this->getDataFromDynamoMigrateDb();
+        return $data;
     }
 
     /**
@@ -151,6 +152,46 @@ class FileController extends Controller
 
         } catch (DynamoDbException $e) {
             echo "Unable to update item:\n";
+            echo $e->getMessage() . "\n";
+        }
+
+    }
+
+    public function getDataFromDynamoMigrateDb()
+    {
+        $credentials = new Credentials(env('AWS_ACCESS_KEY_ID'), env('AWS_SECRET_ACCESS_KEY'));
+
+        $client = new Sdk([
+            'version' => 'latest',
+            'region' => 'us-east-1',
+            'credentials' => $credentials,
+        ]);
+
+        $dynamodb = $client->createDynamoDb();
+        $marshaler = new Marshaler();
+
+        $tableName = 'assigned';
+
+        $eav = $marshaler->marshalJson('
+                    {
+                        ":status_key": "Asignado"
+                    }
+                ');
+
+        $params = [
+            'TableName' => $tableName,
+            "IndexName" => "status-ind",
+            'KeyConditionExpression' => '#yr = :status_key',
+            'ExpressionAttributeNames' => ['#yr' => 'status'],
+            'ExpressionAttributeValues' => $eav,
+            "ScanIndexForward" => false,
+        ];
+
+        try {
+            $result = $dynamodb->query($params);
+            return $result['Items'];
+        } catch (DynamoDbException $e) {
+            echo "Unable to get item:\n";
             echo $e->getMessage() . "\n";
         }
 
